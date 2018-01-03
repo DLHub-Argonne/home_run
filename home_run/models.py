@@ -9,7 +9,7 @@ def load_keras(file):
 
 
 def load_sklearn(file):
-    model = joblib.load(model_file)
+    model = joblib.load(file)
     return model
 
 
