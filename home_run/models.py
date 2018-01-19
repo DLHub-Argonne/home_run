@@ -1,54 +1,57 @@
-import h5py
-from sklearn.externals import joblib 
-from keras.models import load_model
+import abc
+import pickle as pkl
+from sklearn.externals import joblib
 
 
-def load_keras(file):
-    model = load_model(file)
-    return model
+class BaseHRModel:
+    """Represents a single link a machine learning model workflow
+
+    LW19Jan18: Consider how to document what the requirements for each `run` operation
+    """
+
+    @abc.abstractmethod
+    def run(self, input):
+        """Abstract function which takes a list of entries as input,
+        performs some transformation on these entries and returns a list
+        as output
+
+        LW 18Jan18: Should we make this API support taking a generator and
+        passing passing back an iterable? Would some kind of streaming
+        infrastructure make sense?
+
+        Args:
+            input - [dict], entries to process (unserialized from JSON)
+        Returns:
+            output - [dict], processed entries
+            """
+
+        pass
 
 
-def load_sklearn(file):
-    model = joblib.load(file)
-    return model
+class ScikitLearnModel(BaseHRModel):
+    """Class for running a scikit-learn model"""
 
+    def __init__(self, model_path, serialization_method='pickle'):
+        """Initialize this step
 
-def save_keras(model, out_file):
-    return model.save(out_file)
+        Args:
+            model_path - str, path to a single pickle file containing the model
+            """
+        if serialization_method == "pickle":
+            self.model = pkl.load(open(model_path, 'rb'))
+        elif serialization_method == "joblib":
+            self.model = joblib.load(model_path)
+        else:
+            raise Exception('Unknonwn serialization method: ' + serialization_method)
 
-    
-def save_sklearn(model, out_file):
-    return joblib.dump(model, out_file) 
-    
-load_funcs = {
-    "keras":load_keras, 
-    "sklearn":load_sklearn
-}
+    def run(self, inputs):
+        """Run the scikit learn model"""
 
-save_funcs = {
-    "keras":save_keras,
-    "sklearn":save_sklearn
-}
-    
-class HRModel():
-    model_type = None
-    model_file = None
-    model_out_file = None
-    model = None
-    
-    def __init__(self, 
-                 model_type,
-                 model_file,
-                 model_out_file = None,
-                 load_model = True):
-        self.model_type = model_type
-        self.model_file = model_file
-        self.model_out_file = model_out_file
-        if load_model:
-            self.load()
+        # Get the features
+        X = [x['features'] for x in inputs]
+        predictions = self.model.predict(X)
         
-    def load(self):
-        self.model = load_funcs[self.model_type](self.model_file)
-        
-    def save(self):
-        save_funcs[self.model_type](self.model, self.model_out_file)
+        # Add the predictions to the input, return new object
+        for i, p in zip(inputs, predictions):
+            i['prediction'] = p.tolist()
+        return inputs
