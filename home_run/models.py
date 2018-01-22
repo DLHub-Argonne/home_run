@@ -1,5 +1,6 @@
 import abc
 import pickle as pkl
+import numpy as np
 from sklearn.externals import joblib
 from keras.models import load_model as keras_load_model
 
@@ -46,8 +47,8 @@ class KerasModel(BaseHRModel):
 
         # Get the features
         X = [x['features'] for x in inputs]
-        predictions = self.model.predict(X)
-        
+        predictions = self.model.predict(np.array(X))
+
         # Add the predictions to the input, return new object
         for i, p in zip(inputs, predictions):
             i['prediction'] = p.tolist()
