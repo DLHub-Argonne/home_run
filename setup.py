@@ -9,9 +9,10 @@ setup(
         "numpy",
         "scipy",
         "scikit-learn",
-        "tensorflow"
+        "tensorflow",
+        "h5py"
     ],
     python_requires=">=3.6",
     license="Apache License, Version 2.0",
-    url="https://github.com/blaiszik/home_run"
+    url="https://github.com/Argonne-DLHub/home_run"
 )
