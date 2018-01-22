@@ -1,7 +1,7 @@
 import abc
 import pickle as pkl
 from sklearn.externals import joblib
-
+from keras.models import load_model as keras_load_model
 
 class BaseHRModel:
     """Represents a single link a machine learning model workflow
@@ -28,6 +28,31 @@ class BaseHRModel:
         pass
 
 
+class KerasModel(BaseHRModel):
+    """Class for running a Keras model"""
+
+    def __init__(self, model_path):
+        """Initialize this step
+
+        Args:
+            model_path - str, path to a single hdf5 file containing the model
+            """
+
+        self.model = keras_load_model(model_path)
+
+
+    def run(self, inputs):
+        """Run the Keras learn model"""
+
+        # Get the features
+        X = [x['features'] for x in inputs]
+        predictions = self.model.predict(X)
+        
+        # Add the predictions to the input, return new object
+        for i, p in zip(inputs, predictions):
+            i['prediction'] = p.tolist()
+        return inputs
+
 class ScikitLearnModel(BaseHRModel):
     """Class for running a scikit-learn model"""
 
@@ -50,7 +75,7 @@ class ScikitLearnModel(BaseHRModel):
         # Get the features
         X = [x['features'] for x in inputs]
         predictions = self.model.predict(X)
-        
+
         # Add the predictions to the input, return new object
         for i, p in zip(inputs, predictions):
             i['prediction'] = p.tolist()
