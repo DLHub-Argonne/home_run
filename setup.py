@@ -8,7 +8,8 @@ setup(
         "keras",
         "numpy",
         "scipy",
-        "scikit-learn"
+        "scikit-learn",
+        "tensorflow"
     ],
     python_requires=">=3.6",
     license="Apache License, Version 2.0",
