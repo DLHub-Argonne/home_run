@@ -42,7 +42,7 @@ class ScikitLearnModel(BaseHRModel):
         elif serialization_method == "joblib":
             self.model = joblib.load(model_path)
         else:
-            raise Exception('Unknonwn serialization method: ' + serialization_method)
+            raise Exception('Unknown serialization method: ' + serialization_method)
 
     def run(self, inputs):
         """Run the scikit learn model"""
