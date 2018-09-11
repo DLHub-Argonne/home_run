@@ -1,0 +1,5 @@
+flake8
+keras
+numpy
+scipy
+scikit-learn

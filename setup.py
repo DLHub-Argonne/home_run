@@ -5,10 +5,6 @@ setup(
     version='0.0.1',
     packages=['home_run'],
     install_requires=[
-        "keras",
-        "numpy",
-        "scipy",
-        "scikit-learn",
         "dlhub_toolbox"
     ],
     dependency_links=[
