@@ -8,9 +8,13 @@ setup(
         "keras",
         "numpy",
         "scipy",
-        "scikit-learn"
+        "scikit-learn",
+        "dlhub_toolbox"
+    ],
+    dependency_links=[
+        'git+https://github.com/dlhub-argonne/dlhub_toolbox.git#egg=dlhub_toolbox'
     ],
     python_requires=">=3.6",
     license="Apache License, Version 2.0",
-    url="https://github.com/blaiszik/home_run"
+    url="https://github.com/dlhub-argonne/home_run"
 )
