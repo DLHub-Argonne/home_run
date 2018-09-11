@@ -8,15 +8,15 @@ class PythonStaticMethodServable(BaseServable):
 
     def _build(self):
         # Get the settings
-        my_module = self.servable['method_details']['module']
-        my_method = self.servable['method_details']['method_name']
+        my_module = self.servable['methods']['run']['method_details']['module']
+        my_method = self.servable['methods']['run']['method_details']['method_name']
 
         # Load the function
         my_module = importlib.import_module(my_module)
         self.function = getattr(my_module, my_method)
 
         # Get whether it is autobatched
-        self.autobatch = self.servable['method_details']['autobatch']
+        self.autobatch = self.servable['methods']['run']['method_details']['autobatch']
 
     def _run(self, inputs, **parameters):
         if self.autobatch:
@@ -28,11 +28,11 @@ class PythonClassMethodServable(BaseServable):
 
     def _build(self):
         # Get the settings
-        with open(self.servable['location'], 'rb') as fp:
+        with open(self.servable['files']['pickle'], 'rb') as fp:
             my_object = pkl.load(fp)
 
         # Get the method to be run
-        my_method = self.servable['method_details']['method_name']
+        my_method = self.servable['methods']['run']['method_details']['method_name']
         self.function = getattr(my_object, my_method)
 
     def _run(self, inputs, **parameters):

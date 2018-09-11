@@ -43,7 +43,7 @@ class BaseServable:
         """
 
         # Get the parameters
-        params = dict(self.servable['run'].get('parameters', {}))
+        params = dict(self.servable['methods']['run'].get('parameters', {}))
         params.update(parameters)
 
         return self._run(inputs, **params)

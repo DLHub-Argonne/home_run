@@ -10,8 +10,8 @@ class ScikitLearnServable(BaseServable):
     def _build(self):
 
         # Load in the model from disk
-        serialization_method = self.servable['serialization_method']
-        model_path = self.servable['location']
+        serialization_method = self.servable['options']['serialization_method']
+        model_path = self.servable['files']['model']
         if serialization_method == "pickle":
             self.model = pkl.load(open(model_path, 'rb'))
         elif serialization_method == "joblib":
@@ -20,7 +20,7 @@ class ScikitLearnServable(BaseServable):
             raise Exception('Unknown serialization method: ' + serialization_method)
 
         # Determine whether to call predict or predict_proba
-        self.predict = self.model.predict_proba if self.servable['is_classifier'] else self.model.predict
+        self.predict = self.model.predict_proba if self.servable['options']['is_classifier'] else self.model.predict
 
     def _run(self, inputs, **parameters):
         """Compute a prediction using an sklearn_model"""
