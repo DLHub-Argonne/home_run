@@ -25,6 +25,7 @@ class TestPython(TestCase):
         model = PythonStaticMethodModel('numpy', 'max', autobatch=False,
                                         function_kwargs={'axis': 0})
         model.set_title('Example function')
+        model.set_name('function')
         model.set_inputs('ndarray', 'Matrix', shape=[None, None])
         model.set_outputs('ndarray', 'Max of a certain axis', shape=[None])
 
@@ -57,6 +58,7 @@ class TestPython(TestCase):
             # Make the metadata file
             model = PythonClassMethodModel(filename, 'f')
             model.set_title('Example function')
+            model.set_name('function')
             model.set_inputs('float', 'Input')
             model.set_outputs('float', 'Output')
 
