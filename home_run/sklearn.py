@@ -20,7 +20,8 @@ class ScikitLearnServable(BaseServable):
             raise Exception('Unknown serialization method: ' + serialization_method)
 
         # Determine whether to call predict or predict_proba
-        self.predict = self.model.predict_proba if self.servable['options']['is_classifier'] else self.model.predict
+        self.predict = getattr(self.model,
+                               self.servable['methods']['run']['method_details']['method_name'])
 
     def _run(self, inputs, **parameters):
         """Compute a prediction using an sklearn_model"""
