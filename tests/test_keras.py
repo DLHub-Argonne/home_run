@@ -1,6 +1,6 @@
 from dlhub_toolbox.models.servables.keras import KerasModel
-from keras.models import Sequential
-from keras.layers import Dense
+from keras.models import Sequential, Model
+from keras.layers import Dense, Input, Concatenate
 from unittest import TestCase
 from tempfile import mkdtemp
 import numpy as np
@@ -39,4 +39,31 @@ class KerasTest(TestCase):
         finally:
             shutil.rmtree(tempdir)
 
+    def test_keras_multiinput(self):
+        # Make a Keras model
+        input_1 = Input(shape=(1,))
+        input_2 = Input(shape=(1,))
+        inputs = Concatenate()([input_1, input_2])
+        dense = Dense(16, activation='relu')(inputs)
+        output = Dense(1, activation='linear')(dense)
+        model = Model(inputs=[input_1, input_2], outputs=output)
+        model.compile(optimizer='rmsprop', loss='mse')
 
+        # Save it
+        tempdir = mkdtemp()
+        try:
+            model_path = os.path.join(tempdir, 'model.hd5')
+            model.save(model_path)
+
+            # Make the model
+            metadata = KerasModel.create_model(model_path, ["y"])
+            metadata.set_title('Keras Test')
+            metadata.set_name('mlp')
+
+            # Make the servable
+            servable = KerasServable(**metadata.to_dict())
+            x = np.array([[1]])
+            self.assertAlmostEqual(model.predict([x, x])[0],
+                                   servable.run([x, x])[0])
+        finally:
+            shutil.rmtree(tempdir)
