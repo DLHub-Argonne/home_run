@@ -22,8 +22,8 @@ class TestPython(TestCase):
 
     def test_static(self):
         # Make an example static method
-        model = PythonStaticMethodModel('numpy', 'max', autobatch=False,
-                                        function_kwargs={'axis': 0})
+        model = PythonStaticMethodModel.create_model('numpy', 'max', autobatch=False,
+                                                     function_kwargs={'axis': 0})
         model.set_title('Example function')
         model.set_name('function')
         model.set_inputs('ndarray', 'Matrix', shape=[None, None])
@@ -39,7 +39,7 @@ class TestPython(TestCase):
         self.assertTrue(np.isclose([2, 4], servable.run([[1, 2], [3, 4]], axis=1)).all())
 
         # Test the autobatch
-        model.autobatch = True
+        model['servable']['methods']['run']['method_details']['autobatch'] = True
         servable = PythonStaticMethodServable(**model.to_dict())
 
         self.assertTrue(np.isclose([2, 4], servable.run([[1, 2], [3, 4]])).all())
@@ -56,7 +56,7 @@ class TestPython(TestCase):
                 pkl.dump(x, fp)
 
             # Make the metadata file
-            model = PythonClassMethodModel(filename, 'f')
+            model = PythonClassMethodModel.create_model(filename, 'f')
             model.set_title('Example function')
             model.set_name('function')
             model.set_inputs('float', 'Input')

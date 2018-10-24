@@ -41,8 +41,8 @@ class TestScikitLearn(TestCase):
             joblib.dump(reg, files['reg_jbl'][1])
 
             # Test the regressor via pickle
-            model = ScikitLearnModel(files['reg_pkl'][1], 1,
-                                     serialization_method='pickle').set_title('Example')
+            model = ScikitLearnModel.create_model(files['reg_pkl'][1], 1,
+                                                  serialization_method='pickle').set_title('Example')
             model.set_name('example')
             servable = ScikitLearnServable(**model.to_dict())
             self.assertAlmostEqual(servable.run([[1]])[0], 0)

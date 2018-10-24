@@ -28,7 +28,7 @@ class PythonClassMethodServable(BaseServable):
 
     def _build(self):
         # Get the settings
-        with open(self.servable['files']['pickle'], 'rb') as fp:
+        with open(self.dlhub['files']['pickle'], 'rb') as fp:
             my_object = pkl.load(fp)
 
         # Get the method to be run
