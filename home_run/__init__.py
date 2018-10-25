@@ -22,5 +22,9 @@ def create_servable(recipe):
     #  I thought for some time about these two lines of code.
 
     shim_type = recipe['servable']['shim']
-    x = importlib.import_module("home_run.{}".format(shim_type))(**recipe)
-    return x
+
+    # Get the module and class name for the shim
+    module_name, class_name = shim_type.split(".")
+    mod = importlib.import_module("home_run.{}".format(module_name))
+    cls = getattr(mod, class_name)
+    return cls(**recipe)
