@@ -5,10 +5,10 @@ setup(
     version='0.0.1',
     packages=['home_run'],
     install_requires=[
-        "dlhub_toolbox"
+        "dlhub_sdk"
     ],
     dependency_links=[
-        'git+https://github.com/dlhub-argonne/dlhub_toolbox.git#egg=dlhub_toolbox'
+        'git+https://github.com/dlhub-argonne/dlhub_sdk.git#egg=dlhub_sdk'
     ],
     python_requires=">=3.6",
     license="Apache License, Version 2.0",
