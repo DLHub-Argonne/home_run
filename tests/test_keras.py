@@ -33,7 +33,7 @@ class KerasTest(TestCase):
             # Make the servable
             servable = KerasServable(**metadata.to_dict())
             x = [[1]]
-            self.assertAlmostEqual(model.predict(x)[0],
+            self.assertAlmostEqual(model.predict(np.array(x))[0],
                                    servable.run(x)[0])
 
         finally:
