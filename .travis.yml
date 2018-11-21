@@ -9,6 +9,6 @@ env:
   - TEST_ENV=travis
 script:
   - flake8 --max-line-length=128 .
-  - nosetests
+  - nosetests --with-coverage --cover-package=home_run
 after_success:
   - coveralls
