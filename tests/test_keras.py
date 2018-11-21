@@ -1,4 +1,4 @@
-from dlhub_toolbox.models.servables.keras import KerasModel
+from dlhub_sdk.models.servables.keras import KerasModel
 from keras.models import Sequential, Model
 from keras.layers import Dense, Input, Concatenate
 from unittest import TestCase
@@ -32,7 +32,7 @@ class KerasTest(TestCase):
 
             # Make the servable
             servable = KerasServable(**metadata.to_dict())
-            x = np.array([[1]])
+            x = [[1]]
             self.assertAlmostEqual(model.predict(x)[0],
                                    servable.run(x)[0])
 
@@ -62,8 +62,9 @@ class KerasTest(TestCase):
 
             # Make the servable
             servable = KerasServable(**metadata.to_dict())
-            x = np.array([[1]])
-            self.assertAlmostEqual(model.predict([x, x])[0],
+            x = [[1]]
+            servable.run([x, x])
+            self.assertAlmostEqual(model.predict([np.array(x)]*2)[0],
                                    servable.run([x, x])[0])
         finally:
             shutil.rmtree(tempdir)
