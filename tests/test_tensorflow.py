@@ -1,4 +1,4 @@
-from dlhub_toolbox.models.servables.tensorflow import TensorFlowModel
+from dlhub_sdk.models.servables.tensorflow import TensorFlowModel
 from home_run.tensorflow import TensorFlowServable
 from unittest import TestCase
 import tensorflow as tf
@@ -17,6 +17,9 @@ class TestTensorFlow(TestCase):
         # Clear existing model
         if os.path.isdir(tf_export_path):
             shutil.rmtree(tf_export_path)
+
+    def tearDown(self):
+        self.setUp()
 
     def make_model(self):
         """Example used in the dlhub_toolbox"""

@@ -11,7 +11,7 @@ class ScikitLearnServable(BaseServable):
 
         # Load in the model from disk
         serialization_method = self.servable['options']['serialization_method']
-        model_path = self.servable['files']['model']
+        model_path = self.dlhub['files']['model']
         if serialization_method == "pickle":
             self.model = pkl.load(open(model_path, 'rb'))
         elif serialization_method == "joblib":

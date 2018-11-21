@@ -1,4 +1,4 @@
-from dlhub_toolbox.models.servables.python import PythonStaticMethodModel, PythonClassMethodModel
+from dlhub_sdk.models.servables.python import PythonStaticMethodModel, PythonClassMethodModel
 from home_run import __version__
 from unittest import TestCase
 from tempfile import mkstemp
