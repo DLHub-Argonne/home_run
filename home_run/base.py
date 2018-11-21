@@ -1,4 +1,3 @@
-from functools import wraps
 from . import __version__
 
 
@@ -35,6 +34,9 @@ class BaseServable:
         # Call the build function
         self._build()
 
+        # Create the `run` method
+        self._set_function('run', self._run)
+
     def _build(self):
         """Add new functions to this class, as specified in the servable metadata"""
         raise NotImplementedError()
@@ -48,20 +50,6 @@ class BaseServable:
             (dict) Recipe used to create the object
         """
         return {'datacite': self.datacite, 'dlhub': self.dlhub, 'servable': self.servable}
-
-    def run(self, inputs, **parameters):
-        """Invoke the main operation for this servable
-
-        Args:
-            inputs: Inputs to the function
-            parameters (dict): Any options to use for the class. Overrides the defaults
-        """
-
-        # Get the parameters
-        method_name = 'run'
-        params = self._get_method_parameters(method_name, parameters)
-
-        return self._run(inputs, **params)
 
     def _get_method_parameters(self, method_name, parameters):
         """Get the parameters for a method by combining the user-supplied parameters with the
@@ -81,7 +69,7 @@ class BaseServable:
         """Private function to be implemented by subclass"""
         raise NotImplementedError()
 
-    def _set_function(self, method_name, function):
+    def _set_function(self, method_name, f):
         """Define a new method for this class
 
         Creates a new method for this servable object, given the name of the desired method
@@ -91,12 +79,12 @@ class BaseServable:
 
         Args:
             method_name (string): Name of the method
-            function (function pointer): Function to set
+            f (function pointer): Function to set
         """
 
         def new_function(inputs, **parameters):
             params = self._get_method_parameters(method_name, parameters)
-            return function(inputs, **params)
+            return f(inputs, **params)
 
         setattr(self, method_name, new_function)
 
@@ -108,5 +96,5 @@ class BaseServable:
 
         Returns:
             (string) Version of home_run
-            """
+        """
         return __version__
