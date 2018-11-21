@@ -1,14 +1,11 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='home_run',
     version='0.0.1',
-    packages=['home_run'],
+    packages=find_packages(exclude=('test',)),
     install_requires=[
-        "dlhub_toolbox"
-    ],
-    dependency_links=[
-        'git+https://github.com/dlhub-argonne/dlhub_toolbox.git#egg=dlhub_toolbox'
+        "dlhub_sdk"
     ],
     python_requires=">=3.6",
     license="Apache License, Version 2.0",
