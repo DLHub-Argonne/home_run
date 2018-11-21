@@ -3,6 +3,7 @@ python: '3.6'
 install:
   - pip install --upgrade pip
   - pip install --only-binary=numpy,scipy -r test-requirements.txt
+  - pip install coveralls
   - pip install -e .
 env:
   - TEST_ENV=travis
