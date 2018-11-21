@@ -28,6 +28,6 @@ class ScikitLearnServable(BaseServable):
 
         # Get the features
         predictions = self.predict(inputs, **parameters)
-        
+
         # Add the predictions to the input, return new object
         return predictions
