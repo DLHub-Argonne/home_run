@@ -11,7 +11,8 @@ class KerasServable(BaseServable):
         self.model = load_model(self.dlhub['files']['model'])
 
         # Check whether this model is a multi-input
-        self.is_multiinput = self.servable['methods']['run']['input']['type'] == 'list'
+        self.is_multiinput = self.servable['methods']['run']['input']['type'] == 'tuple'
+        self.is_multioutput = self.servable['methods']['run']['output']['type'] == 'tuple'
 
     def _run(self, inputs, **parameters):
         if self.is_multiinput:
@@ -21,4 +22,11 @@ class KerasServable(BaseServable):
             # If not, just turn the inputs into an array
             X = np.array(inputs)
 
-        return self.model.predict(X).tolist()
+        # Run the model
+        result = self.model.predict(X)
+
+        # Convert results to list so they can be used by non-Python clients
+        if self.is_multioutput:
+            return [y.tolist() for y in result]
+        else:
+            return result.tolist()

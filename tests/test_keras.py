@@ -68,3 +68,31 @@ class KerasTest(TestCase):
                                    servable.run([x, x])[0])
         finally:
             shutil.rmtree(tempdir)
+
+    def test_keras_multioutput(self):
+        # Make a Keras model
+        input_1 = Input(shape=(1,))
+        dense = Dense(16, activation='relu')(input_1)
+        output_1 = Dense(1, activation='linear')(dense)
+        output_2 = Dense(1, activation='linear')(dense)
+        model = Model(inputs=input_1, outputs=[output_1, output_2])
+        model.compile(optimizer='rmsprop', loss='mse')
+
+        # Save it
+        tempdir = mkdtemp()
+        try:
+            model_path = os.path.join(tempdir, 'model.hd5')
+            model.save(model_path)
+
+            # Make the model
+            metadata = KerasModel.create_model(model_path, ["y"])
+            metadata.set_title('Keras Test')
+            metadata.set_name('mlp')
+
+            # Make the servable
+            servable = KerasServable(**metadata.to_dict())
+            x = [[1]]
+            servable.run(x)
+            self.assertTrue(np.isclose(model.predict(np.array(x)), servable.run(x)).all())
+        finally:
+            shutil.rmtree(tempdir)
