@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/DLHub-Argonne/home_run.svg?branch=master)](https://travis-ci.org/DLHub-Argonne/home_run)[![Coverage Status](https://coveralls.io/repos/github/DLHub-Argonne/home_run/badge.svg?branch=master)](https://coveralls.io/github/DLHub-Argonne/home_run?branch=master)
 
-`home_run` is a tool used by DLHub internally to turn a bunch of files and a recipe into an functional Python object. 
+`home_run` is a tool used by [the Data and Learning Hub for Science](https://www.dlhub.org) internally to turn a bunch of files and a recipe into an functional Python object. 
 
 ## Installation
 
@@ -21,3 +21,5 @@ All recipes are a subclass of `BaseServable`, which provides the general framewo
 Each subclass has a matching `BaseMetadataModel` class in `dlhub_sdk`.
 For example, the type of servable that can be described by the `PythonStaticMethodModel` can be run by the `PythonStaticMethodServable`.
    
+## Project Support
+This material is based upon work supported by Laboratory Directed Research and Development (LDRD) funding from Argonne National Laboratory, provided by the Director, Office of Science, of the U.S. Department of Energy under Contract No. DE-AC02-06CH11357.
