@@ -23,7 +23,7 @@ class TensorFlowServable(BaseServable):
 
         # Create methods for the other operations
         for name in self.servable['methods'].keys():
-            if name is not "run":
+            if name != "run":
                 self._set_function(name, partial(self._call_graph, name))
 
     def _call_graph(self, method, inputs, **parameters):
