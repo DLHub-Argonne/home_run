@@ -45,7 +45,7 @@ class KerasServable(BaseServable):
             # Load in the weights
             self.model.load_weights(self.dlhub['files']['model'])
             logger.info('Loaded arch ({}) and weights ({})'.format(arch_path,
-                                                                    self.dlhub['files']['model']))
+                                                                   self.dlhub['files']['model']))
         else:
             self.model = load_model(self.dlhub['files']['model'])
             logger.info('Loaded single-file model ({})'.format(self.dlhub['files']['model']))
