@@ -19,7 +19,7 @@ class PythonStaticMethodServable(BaseServable):
 
         # Get whether it is autobatched
         self.autobatch = self.servable['methods']['run']['method_details']['autobatch']
-        logger.warning('Made a static method {} from {} with{} autobatch'.format(
+        logger.info('Made a static method {} from {} with{} autobatch'.format(
             my_method, my_module, '' if self.autobatch else 'out'
         ))
 
@@ -39,7 +39,7 @@ class PythonClassMethodServable(BaseServable):
         # Get the method to be run
         my_method = self.servable['methods']['run']['method_details']['method_name']
         self.function = getattr(my_object, my_method)
-        logger.warning('Made a static method {} from picked object ({})'.format(
+        logger.info('Made a static method {} from picked object ({})'.format(
             my_method, self.dlhub['files']['pickle']
         ))
 

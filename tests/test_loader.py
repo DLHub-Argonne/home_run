@@ -18,3 +18,4 @@ class TestLoader(TestCase):
         # Test the loader
         servable = create_servable(model.to_dict())
         self.assertIsInstance(servable, PythonStaticMethodServable)
+        self.assertEqual([0], servable.run([0, -1]))

@@ -1,4 +1,6 @@
 from . import __version__
+import logging
+logger = logging.getLogger(__name__)
 
 
 class BaseServable:
@@ -84,6 +86,7 @@ class BaseServable:
 
         def new_function(inputs, **parameters):
             params = self._get_method_parameters(method_name, parameters)
+            logger.debug('Running method {}'.format(method_name))
             return f(inputs, **params)
 
         setattr(self, method_name, new_function)
