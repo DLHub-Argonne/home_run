@@ -1,4 +1,6 @@
+from logging.handlers import RotatingFileHandler
 import importlib
+import logging
 
 __version__ = '0.0.1'
 
@@ -21,7 +23,16 @@ def create_servable(recipe):
     #  Using try/catch to only load modules that load properly will mask real import errors.
     #  I thought for some time about these two lines of code.
 
+    # Define the logging settings
+    logger = logging.getLogger('home_run')
+    logger.setLevel(logging.DEBUG)
+    handler = RotatingFileHandler('dlhub.log', maxBytes=4 * 1024 * 1024, backupCount=1)
+    handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    logger.addHandler(handler)
+
+    # Get the shim type
     shim_type = recipe['servable']['shim']
+    logger.info('Found shim type: ' + shim_type)
 
     # Get the module and class name for the shim
     module_name, class_name = shim_type.split(".")

@@ -1,6 +1,8 @@
 from home_run.base import BaseServable
 import pickle as pkl
 import importlib
+import logging
+logger = logging.getLogger(__name__)
 
 
 class PythonStaticMethodServable(BaseServable):
@@ -12,11 +14,14 @@ class PythonStaticMethodServable(BaseServable):
         my_method = self.servable['methods']['run']['method_details']['method_name']
 
         # Load the function
-        my_module = importlib.import_module(my_module)
-        self.function = getattr(my_module, my_method)
+        my_module_obj = importlib.import_module(my_module)
+        self.function = getattr(my_module_obj, my_method)
 
         # Get whether it is autobatched
         self.autobatch = self.servable['methods']['run']['method_details']['autobatch']
+        logger.warning('Made a static method {} from {} with{} autobatch'.format(
+            my_method, my_module, '' if self.autobatch else 'out'
+        ))
 
     def _run(self, inputs, **parameters):
         if self.autobatch:
@@ -34,6 +39,9 @@ class PythonClassMethodServable(BaseServable):
         # Get the method to be run
         my_method = self.servable['methods']['run']['method_details']['method_name']
         self.function = getattr(my_object, my_method)
+        logger.warning('Made a static method {} from picked object ({})'.format(
+            my_method, self.dlhub['files']['pickle']
+        ))
 
     def _run(self, inputs, **parameters):
         return self.function(inputs, **parameters)
