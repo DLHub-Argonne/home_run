@@ -5,7 +5,7 @@ import logging
 __version__ = '0.0.1'
 
 
-def create_servable(recipe):
+def create_servable(recipe, debug=False):
     """Given a recipe, create a servable
 
     Args:
@@ -25,7 +25,7 @@ def create_servable(recipe):
 
     # Define the logging settings
     logger = logging.getLogger('home_run')
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.DEBUG if debug else logging.INFO)
     handler = RotatingFileHandler('dlhub.log', maxBytes=4 * 1024 * 1024, backupCount=1)
     handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
     logger.addHandler(handler)

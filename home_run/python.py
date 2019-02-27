@@ -35,12 +35,13 @@ class PythonClassMethodServable(BaseServable):
         # Get the settings
         with open(self.dlhub['files']['pickle'], 'rb') as fp:
             my_object = pkl.load(fp)
+        logger.info('Loaded picked object: {}'.format(self.dlhub['files']['pickle']))
 
         # Get the method to be run
         my_method = self.servable['methods']['run']['method_details']['method_name']
         self.function = getattr(my_object, my_method)
-        logger.info('Made a static method {} from picked object ({})'.format(
-            my_method, self.dlhub['files']['pickle']
+        logger.info('Made a static method {} from type: {}'.format(
+            my_method, my_object.__class__.__name__
         ))
 
     def _run(self, inputs, **parameters):

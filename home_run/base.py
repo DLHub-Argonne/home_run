@@ -29,6 +29,8 @@ class BaseServable:
             servable (dict): Metadata describing the servable. Instructions on what it can perform
         """
 
+        logger.info('Creating a servable for {} version {}'.format(dlhub['name'],
+                                                                   dlhub.get('id', None)))
         self.datacite = datacite
         self.dlhub = dlhub
         self.servable = servable
@@ -86,10 +88,12 @@ class BaseServable:
 
         def new_function(inputs, **parameters):
             params = self._get_method_parameters(method_name, parameters)
-            logger.debug('Running method {}'.format(method_name))
+            logger.debug('Running method {} with params: {}'.format(method_name, params))
             return f(inputs, **params)
 
         setattr(self, method_name, new_function)
+        logger.info('Added function to servable {}: {}'.format(self.dlhub['name'],
+                                                               method_name))
 
     @staticmethod
     def get_version():

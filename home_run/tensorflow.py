@@ -1,7 +1,9 @@
 from .base import BaseServable
 from functools import partial
 import tensorflow as tf
+import logging
 import os
+logger = logging.getLogger(__name__)
 
 
 class TensorFlowServable(BaseServable):
@@ -10,6 +12,7 @@ class TensorFlowServable(BaseServable):
         # Initialize the TF environment
         self.graph = tf.Graph()
         self.sess = tf.Session(graph=self.graph)
+        logger.info('Started session. Available devices: {}'.format(self.sess.list_devices()))
 
         # Get the directory that contains the pb file
         workdir = None
@@ -18,13 +21,23 @@ class TensorFlowServable(BaseServable):
                 workdir = os.path.dirname(f)
 
         # Load in that directory
-        self.model = tf.saved_model.loader.load(self.sess, [tf.saved_model.tag_constants.SERVING],
+        self.model = tf.saved_model.loader.load(self.sess,
+                                                [tf.saved_model.tag_constants.SERVING],
                                                 workdir)
+        logger.info('Loaded model from '.format(workdir))
 
         # Create methods for the other operations
         for name in self.servable['methods'].keys():
             if name != "run":
                 self._set_function(name, partial(self._call_graph, name))
+                logger.info('Mapped method {}. Inputs {}. Outputs {}'.format(
+                    name, self.servable['methods'][name]['method_details']['input_nodes'],
+                    self.servable['methods'][name]['method_details']['output_nodes']
+                ))
+        logger.info('Mapped function name to inputs {} and outputs {}'.format(
+            'run', self.servable['methods']['run']['method_details']['input_nodes'],
+            self.servable['methods']['run']['method_details']['output_nodes']
+        ))
 
     def _call_graph(self, method, inputs, **parameters):
         """Call a certain function on the current graph.
