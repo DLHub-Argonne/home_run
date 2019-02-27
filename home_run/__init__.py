@@ -10,6 +10,7 @@ def create_servable(recipe, debug=False):
 
     Args:
         recipe (dict): Recipe describing a servable to be created
+        debug (bool): Whether to print DEBUG-level events to the log
     Returns:
         (BaseServable): Servable object
     """
