@@ -18,6 +18,9 @@ class BaseServable:
         methods are created by calling the "_set_function" method (detailed instructions
         are provided in the docstring for the "_set_function" method).
 
+    When adding logging events, use INFO level or higher for status messages during servable
+    construction (as this only happens once) and DEBUG-level for events that occur at each
+    invocation. WARN level or higher can occur whenever necessary.
     """
 
     def __init__(self, datacite, dlhub, servable):
