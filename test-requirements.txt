@@ -1,3 +1,4 @@
+dlhub_sdk
 flake8
 keras
 numpy
