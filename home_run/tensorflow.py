@@ -56,6 +56,10 @@ class TensorFlowServable(BaseServable):
         input_nodes = run_info['method_details']['input_nodes']
         output_nodes = run_info['method_details']['output_nodes']
 
+        # Make sure
+        if len(output_nodes) == 1:
+            output_nodes = output_nodes[0]
+
         # Make the input field dictionary
         if len(input_nodes) == 1:
             feed_dict = {input_nodes[0]: inputs}

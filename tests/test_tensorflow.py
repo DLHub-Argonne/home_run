@@ -61,6 +61,11 @@ class TestTensorFlow(TestCase):
                 outputs={'scale_mult': scale_mult_desc},
                 method_name='scalar_multiply'
             )
+            multiout_sig = tf.saved_model.signature_def_utils.build_signature_def(
+                inputs={'x': x_desc, 'z': z_desc},
+                outputs={'scale_mult': scale_mult_desc, 'y': y_desc},
+                method_name='scalar_multiply'
+            )
 
             #  Add the functions and the  state of the graph to the builder
             builder.add_meta_graph_and_variables(
@@ -68,7 +73,8 @@ class TestTensorFlow(TestCase):
                 signature_def_map={
                     tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY: func_sig,
                     'length': len_sig,
-                    'scalar_multiply': mult_sig
+                    'scalar_multiply': mult_sig,
+                    'multioutput': multiout_sig
                 })
 
             #  Save the function
@@ -84,7 +90,15 @@ class TestTensorFlow(TestCase):
         model = TensorFlowServable(**metadata.to_dict())
 
         # Test it out
+        self.assertEqual((1, 3), np.shape(model.run([[2, 3, 4]])))
         self.assertTrue(np.isclose([[3, 4, 5]], model.run([[2, 3, 4]])).all())
         self.assertTrue(np.isclose([[4, 8, 12]],
                                    model.scalar_multiply(([[1, 2, 3]], 4))).all())
-        self.assertAlmostEqual(3, model.length([[1, 2, 3]])[0])
+        self.assertAlmostEqual(3, model.length([[1, 2, 3]]))
+
+        # Test the multioutput
+        output = model.multioutput(([[1, 2, 3]], 4))
+        self.assertIsInstance(output, list)
+        self.assertEqual(2, len(output))
+        self.assertEqual((1, 3), np.shape(output[0]))
+        self.assertEqual((1, 3), np.shape(output[1]))
