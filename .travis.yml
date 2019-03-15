@@ -1,14 +1,23 @@
 language: python
 python: '3.6'
 install:
-  - pip install --upgrade pip
-  - pip install --only-binary=numpy,scipy -r test-requirements.txt
-  - pip install coveralls
-  - pip install -e .
-env:
-  - TEST_ENV=travis
+- pip install --upgrade pip
+- pip install --only-binary=numpy,scipy -r test-requirements.txt
+- pip install coveralls
+- pip install -e .
+cache: pip
 script:
-  - flake8 --max-line-length=128 .
-  - nosetests --with-coverage --cover-package=home_run
+- flake8
+- nosetests --with-coverage --cover-package=home_run
 after_success:
-  - coveralls
+- coveralls
+deploy:
+  provider: pypi
+  user: wardlt
+  skip_existing: true
+  distributions: sdist bdist_wheel
+  on:
+    tags: true
+    branch: master
+  password:
+    secure: n1ukMJUfhdh2ZA+Qp67jI+wc5kRIcxuwcxm7LzcFxzmeNowIT4zOsbdkhg0OGNxYaSXV6OLiddbHcPAkPNR2qCuc2RMs3lnCrtnvPgYPJ73qHxP4XGXoy3rasnayj0SRDIRjgyjgwNKWiHgRDv8waXuqPTmlWKANXcaGbOnFvakWhmijgKpnxtwSy5tx73Q1vKc9R81e1gnvytLO5DuCdQA16U4aoMwuYDUviqSJBpsIzGk4MDnBWY8k8Zaq9A6ayN10MJJl/8B1+FyLVhzdUsXoO1cKJvFItdSP9UyF7R7VgkFaAaGy+6CngoU2hRT0lvQpo/p/08tui0YaYU0qm6an8TR/9zEKPLmDMshjfDEK7GS0mSGQuQ+mwx7F1cimRCIo5g802get+5QPZJSGmR8W9i+V5OYHLsut1tL9YF2DP+0t3/VJ92BiD1YzZuPUIV26z6pDCbqXi6iZYaQ0+pIutaGSu61uzFKNflEb1AED1V9pgO90hVciEG3qnmBX69yqj02GzYpBtLIY6Uu/7Ky1xVpx6hw7QRKzw0cmS6airTgdYWYGbLPQOWiiGSXF0pVgBPVqFkzRB1jhPupcNY5JAuGiwU0eSIwMEREOMxylBfNIQm8v6Yi/+BxmOtTmI3r8dDUOSg3i/y1IwGXuk7INDoPIWAGwAwfPsUIk6zY=
