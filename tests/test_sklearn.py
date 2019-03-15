@@ -42,21 +42,25 @@ class TestScikitLearn(TestCase):
 
             # Test the regressor via pickle
             model = ScikitLearnModel.create_model(files['reg_pkl'][1], 1,
-                                                  serialization_method='pickle').set_title('Example')
+                                                  serialization_method='pickle')\
+                .set_title('Example')
             model.set_name('example')
             servable = ScikitLearnServable(**model.to_dict())
             self.assertAlmostEqual(servable.run([[1]])[0], 0)
 
             # Test the regressor via joblib
             model = ScikitLearnModel.create_model(files['reg_jbl'][1], 1,
-                                                  serialization_method='joblib').set_title('Example')
+                                                  serialization_method='joblib')\
+                .set_title('Example')
             model.set_name('example')
             servable = ScikitLearnServable(**model.to_dict())
             self.assertAlmostEqual(servable.run([[1]])[0], 0)
 
             # Test the classifier
-            model = ScikitLearnModel.create_model(files['clf_pkl'][1], 1, classes=['Yes', 'No'],
-                                                  serialization_method='pickle').set_title('Example')
+            model = ScikitLearnModel.create_model(files['clf_pkl'][1], 1,
+                                                  classes=['Yes', 'No'],
+                                                  serialization_method='pickle')\
+                .set_title('Example')
             model.set_name('example')
             servable = ScikitLearnServable(**model.to_dict())
             self.assertTrue(np.isclose(servable.run([[1]]), clf.predict_proba([[1]])).all())
