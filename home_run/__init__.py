@@ -2,8 +2,6 @@ from logging.handlers import RotatingFileHandler
 import importlib
 import logging
 
-__version__ = '0.0.1'
-
 
 def create_servable(recipe, debug=False):
     """Given a recipe, create a servable

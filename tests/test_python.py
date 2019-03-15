@@ -1,5 +1,5 @@
 from dlhub_sdk.models.servables.python import PythonStaticMethodModel, PythonClassMethodModel
-from home_run import __version__
+from home_run.version import __version__
 from unittest import TestCase
 from tempfile import mkstemp
 import pickle as pkl
