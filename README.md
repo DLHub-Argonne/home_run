@@ -6,7 +6,13 @@
 
 ## Installation
 
-`home_run` is not yet on PyPi. So, you have to install it by first cloning the repository and then calling `pip install -e .`
+`home_run` is on PyPi. Install it by calling
+
+```bash
+pip install home_run
+```
+
+`home_run` is designed to be as light-weight as possible, and has no dependencies. 
 
 ## Technical Details
 
