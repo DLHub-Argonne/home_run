@@ -1,6 +1,8 @@
 # DLHub home_run
 
-[![Build Status](https://travis-ci.org/DLHub-Argonne/home_run.svg?branch=master)](https://travis-ci.org/DLHub-Argonne/home_run)[![Coverage Status](https://coveralls.io/repos/github/DLHub-Argonne/home_run/badge.svg?branch=master)](https://coveralls.io/github/DLHub-Argonne/home_run?branch=master)
+[![Build Status](https://travis-ci.org/DLHub-Argonne/home_run.svg?branch=master)](https://travis-ci.org/DLHub-Argonne/home_run)
+[![Coverage Status](https://coveralls.io/repos/github/DLHub-Argonne/home_run/badge.svg?branch=master)](https://coveralls.io/github/DLHub-Argonne/home_run?branch=master)
+[![PyPI version](https://badge.fury.io/py/home-run.svg)](https://badge.fury.io/py/home-run)
 
 `home_run` is a tool used by [the Data and Learning Hub for Science](https://www.dlhub.org) internally to turn a bunch of files and a recipe into an functional Python object. 
 
