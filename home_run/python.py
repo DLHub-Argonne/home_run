@@ -17,6 +17,9 @@ class PythonStaticMethodServable(BaseServable):
         my_module_obj = importlib.import_module(my_module)
         self.function = getattr(my_module_obj, my_method)
 
+        # Determine whether we need to unpack the inputs
+        self.unpack = self.servable['methods']['run']['method_details'].get('unpack', False)
+
         # Get whether it is autobatched
         self.autobatch = self.servable['methods']['run']['method_details']['autobatch']
         logger.info('Made a static method {} from {} with{} autobatch'.format(
@@ -25,7 +28,12 @@ class PythonStaticMethodServable(BaseServable):
 
     def _run(self, inputs, **parameters):
         if self.autobatch:
-            return [self.function(x, **parameters) for x in inputs]
+            if self.unpack:
+                return [self.function(*x, **parameters) for x in inputs]
+            else:
+                return [self.function(x, **parameters) for x in inputs]
+        if self.unpack:
+            return self.function(*inputs, **parameters)
         return self.function(inputs, **parameters)
 
 
@@ -37,6 +45,9 @@ class PythonClassMethodServable(BaseServable):
             my_object = pkl.load(fp)
         logger.info('Loaded picked object: {}'.format(self.dlhub['files']['pickle']))
 
+        # Determine whether we need to unpack the inputs
+        self.unpack = self.servable['methods']['run']['method_details'].get('unpack', False)
+
         # Get the method to be run
         my_method = self.servable['methods']['run']['method_details']['method_name']
         self.function = getattr(my_object, my_method)
@@ -45,4 +56,6 @@ class PythonClassMethodServable(BaseServable):
         ))
 
     def _run(self, inputs, **parameters):
+        if self.unpack:
+            return self.function(*inputs, **parameters)
         return self.function(inputs, **parameters)

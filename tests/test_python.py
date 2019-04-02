@@ -1,4 +1,5 @@
 from dlhub_sdk.models.servables.python import PythonStaticMethodModel, PythonClassMethodModel
+from dlhub_sdk.utils.types import compose_argument_block
 from home_run.version import __version__
 from unittest import TestCase
 from tempfile import mkstemp
@@ -72,6 +73,72 @@ class TestPython(TestCase):
             # Test operations for the base class
             self.assertEqual(__version__, servable.get_version())
             self.assertEqual(model.to_dict(), servable.get_recipe())
+
+        finally:
+            os.unlink(filename)
+
+    def test_multiargs(self):
+        # Make the maximum function
+        model = PythonStaticMethodModel.from_function_pointer(max)\
+            .set_name('test').set_title('test')
+
+        # Describe the inputs
+        model.set_inputs('tuple', 'Two numbers',
+                         element_types=[
+                             compose_argument_block('float', 'A number'),
+                             compose_argument_block('float', 'A second number')
+                         ])
+        model.set_outputs('float', 'Maximum of the two numbers')
+        model.set_unpack_inputs(True)
+
+        # Make sure the shim works
+        servable = PythonStaticMethodServable(**model.to_dict())
+        self.assertEquals(servable.run((1, 2)), 2)
+
+    def test_multiargs_autobatch(self):
+        # Make the maximum function
+        model = PythonStaticMethodModel.from_function_pointer(max, autobatch=True)\
+            .set_name('test').set_title('test')
+
+        # Describe the inputs
+        model.set_inputs('list', 'List of pairs of numbers',
+                         item_type=compose_argument_block(
+                             'tuple', 'Two numbers',
+                             element_types=[
+                                 compose_argument_block('float', 'A number'),
+                                 compose_argument_block('float', 'A second number')
+                             ]))
+        model.set_outputs('list', 'Maximum of each pair', item_type='float')
+        model.set_unpack_inputs(True)
+
+        # Make sure the shim works
+        servable = PythonStaticMethodServable(**model.to_dict())
+        self.assertEquals(servable.run([(1, 2)]), [2])
+
+    def test_multiargs_pickle(self):
+        # Make an example class
+        x = ExampleClass(2)
+
+        # Save a pickle
+        fp, filename = mkstemp('.pkl')
+        os.close(fp)
+        try:
+            with open(filename, 'wb') as fp:
+                pkl.dump(x, fp)
+
+            # Make the metadata file
+            model = PythonClassMethodModel.create_model(filename, 'f')
+            model.set_title('Example function')
+            model.set_name('function')
+            model.set_inputs('tuple', 'inputs', element_types=['float']*2)
+            model.set_outputs('float', 'Output')
+            model.set_unpack_inputs(True)
+
+            # Make the servable
+            servable = PythonClassMethodServable(**model.to_dict())
+
+            # Test the servable
+            self.assertAlmostEqual(4, servable.run([1, 2]))
 
         finally:
             os.unlink(filename)
