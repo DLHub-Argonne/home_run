@@ -192,8 +192,9 @@ class BaseServable:
         servable metadata. The function must take two arguments: the inputs to the servable function
         and any configurable parameters as a dictionary (same as "_run")
 
-        The purpose of the _set_function method is to avoid the need for functions in different shims
-        to need to implement the code for downloading files locally or to handle default arguments.
+        The purpose of the _set_function method is to avoid the need
+        for functions in different shims to need to implement the code
+        for downloading files locally and handling default arguments.
 
         Args:
             method_name (string): Name of the method

@@ -44,7 +44,8 @@ class TestPython(TestCase):
         self.assertTrue(np.isclose([3, 4], servable.run([[1, 2], [3, 4]])).all())
 
         # Test giving it parameters
-        self.assertTrue(np.isclose([2, 4], servable.run([[1, 2], [3, 4]], parameters=dict(axis=1))).all())
+        self.assertTrue(np.isclose([2, 4], servable.run([[1, 2], [3, 4]],
+                                                        parameters=dict(axis=1))).all())
 
         # Test the autobatch
         model['servable']['methods']['run']['method_details']['autobatch'] = True
@@ -161,7 +162,7 @@ class TestPython(TestCase):
         servable = PythonStaticMethodServable(**model.to_dict())
 
         # Run on local file
-        self.assertTrue(servable.run(__file__, files={'url': os.path.basename(__file__)}))
+        self.assertTrue(servable.run(__file__, files={'url': __file__}))
         if system() != 'Windows':
             self.assertTrue(servable.run(__file__,
                                          files={'url': 'file:///' + __file__}))  # Fail on Windows
@@ -183,7 +184,7 @@ class TestPython(TestCase):
         servable = PythonStaticMethodServable(**model.to_dict())
 
         # Run on local file
-        self.assertTrue(servable.run(__file__, files=[{'url': os.path.basename(__file__)}]))
+        self.assertTrue(servable.run(__file__, files=[{'url': __file__}]))
         if system() != 'Windows':
             self.assertTrue(servable.run(__file__,
                                          files=[{'url': 'file:///' + __file__}]))  # Fail on Windows
@@ -214,4 +215,3 @@ class TestPython(TestCase):
             {'url': __file__},
             [{'url': __file__}]
         ]))
-
