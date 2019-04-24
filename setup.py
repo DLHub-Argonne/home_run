@@ -12,6 +12,7 @@ setup(
     version=version,
     packages=find_packages(exclude=['tests', 'tests.*']),
     python_requires=">=3.6",
+    install_requires=['requests'],
     description="Turns DLHub metadata into functional Python objects",
     long_description=open("README.md").read(),
     license="Apache License, Version 2.0",
