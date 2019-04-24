@@ -3,11 +3,18 @@ from dlhub_sdk.utils.types import compose_argument_block
 from home_run.version import __version__
 from unittest import TestCase
 from tempfile import mkstemp
+from platform import system
 import pickle as pkl
 import numpy as np
 import os
 
 from home_run.python import PythonStaticMethodServable, PythonClassMethodServable
+
+
+def multifile_input(input, inputs, const):
+    return all([os.path.isfile(input),
+                all(map(os.path.isfile, inputs)),
+                const])
 
 
 class ExampleClass:
@@ -37,7 +44,8 @@ class TestPython(TestCase):
         self.assertTrue(np.isclose([3, 4], servable.run([[1, 2], [3, 4]])).all())
 
         # Test giving it parameters
-        self.assertTrue(np.isclose([2, 4], servable.run([[1, 2], [3, 4]], axis=1)).all())
+        self.assertTrue(np.isclose([2, 4], servable.run([[1, 2], [3, 4]],
+                                                        parameters=dict(axis=1))).all())
 
         # Test the autobatch
         model['servable']['methods']['run']['method_details']['autobatch'] = True
@@ -68,7 +76,7 @@ class TestPython(TestCase):
 
             # Test the servable
             self.assertAlmostEqual(3, servable.run(1))
-            self.assertAlmostEqual(4, servable.run(1, b=2))
+            self.assertAlmostEqual(4, servable.run(1, parameters=dict(b=2)))
 
             # Test operations for the base class
             self.assertEqual(__version__, servable.get_version())
@@ -142,3 +150,68 @@ class TestPython(TestCase):
 
         finally:
             os.unlink(filename)
+
+    def test_single_file_input(self):
+        # Make the metadata model
+        model = PythonStaticMethodModel.from_function_pointer(os.path.isfile).set_name('test')
+        model.set_title('test')
+        model.set_inputs('file', 'A file')
+        model.set_outputs('boolean', 'Whether it exists')
+
+        # Make the servable
+        servable = PythonStaticMethodServable(**model.to_dict())
+
+        # Run on local file
+        self.assertTrue(servable.run(__file__, files={'url': __file__}))
+        if system() != 'Windows':
+            self.assertTrue(servable.run(__file__,
+                                         files={'url': 'file:///' + __file__}))  # Fail on Windows
+
+        # Run on remote file
+        self.assertTrue(servable.run(__file__,
+                                     files={'url': 'https://www.google.com/images/branding/'
+                                                   'googlelogo/1x/googlelogo_color_272x92dp.png'}))
+
+    def test_single_file_list_input(self):
+        # Make the metadata model
+        model = PythonStaticMethodModel.from_function_pointer(os.path.isfile, autobatch=True)
+        model.set_name('test')
+        model.set_title('test')
+        model.set_inputs('list', 'List of files', item_type='file')
+        model.set_outputs('list', 'Whether each file exists', item_type='boolean')
+
+        # Make the servable
+        servable = PythonStaticMethodServable(**model.to_dict())
+
+        # Run on local file
+        self.assertTrue(servable.run(__file__, files=[{'url': __file__}]))
+        if system() != 'Windows':
+            self.assertTrue(servable.run(__file__,
+                                         files=[{'url': 'file:///' + __file__}]))  # Fail on Windows
+
+        # Run on remote file
+        self.assertTrue(servable.run(__file__,
+                                     files=[{'url': 'https://www.google.com/images/branding/'
+                                                    'googlelogo/1x/googlelogo_color_272x92dp.png'}]
+                                     ))
+
+    def test_file_multiinput(self):
+        model = PythonStaticMethodModel.from_function_pointer(multifile_input)
+        model.set_name('test')
+        model.set_title('test')
+        model.set_inputs('tuple', 'Several things', element_types=[
+            compose_argument_block('file', 'Single file'),
+            compose_argument_block('list', 'Multiple files', item_type='file'),
+            compose_argument_block('boolean', 'Something random')
+        ])
+        model.set_outputs('bool', 'Should be True')
+        model.set_unpack_inputs(True)
+
+        # Make the servable
+        servable = PythonStaticMethodServable(**model.to_dict())
+
+        # Test it
+        self.assertTrue(servable.run(['file', ['file'], True], files=[
+            {'url': __file__},
+            [{'url': __file__}]
+        ]))

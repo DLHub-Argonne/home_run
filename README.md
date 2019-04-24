@@ -14,7 +14,7 @@
 pip install home_run
 ```
 
-`home_run` is designed to be as light-weight as possible, and has no dependencies. 
+`home_run` is designed to be as light-weight as possible, and has only `requests` as a dependency. 
 
 ## Technical Details
 
