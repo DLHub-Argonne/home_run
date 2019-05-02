@@ -1,4 +1,5 @@
 from dlhub_sdk.models.servables.python import PythonStaticMethodModel, PythonClassMethodModel
+from dlhub_sdk.utils.schemas import validate_against_dlhub_schema
 from dlhub_sdk.utils.types import compose_argument_block
 from home_run.version import __version__
 from unittest import TestCase
@@ -138,11 +139,13 @@ class TestPython(TestCase):
             model = PythonClassMethodModel.create_model(filename, 'f')
             model.set_title('Example function')
             model.set_name('function')
-            model.set_inputs('tuple', 'inputs', element_types=['float']*2)
+            model.set_inputs('tuple', 'inputs',
+                             element_types=[compose_argument_block('float', 'Number')]*2)
             model.set_outputs('float', 'Output')
             model.set_unpack_inputs(True)
 
             # Make the servable
+            validate_against_dlhub_schema(model.to_dict(), 'servable')
             servable = PythonClassMethodServable(**model.to_dict())
 
             # Test the servable
@@ -162,15 +165,13 @@ class TestPython(TestCase):
         servable = PythonStaticMethodServable(**model.to_dict())
 
         # Run on local file
-        self.assertTrue(servable.run(__file__, files={'url': __file__}))
+        self.assertTrue(servable.run({'url': __file__}))
         if system() != 'Windows':
-            self.assertTrue(servable.run(__file__,
-                                         files={'url': 'file:///' + __file__}))  # Fail on Windows
+            self.assertTrue(servable.run({'url': 'file:///' + __file__}))  # Fail on Windows
 
         # Run on remote file
-        self.assertTrue(servable.run(__file__,
-                                     files={'url': 'https://www.google.com/images/branding/'
-                                                   'googlelogo/1x/googlelogo_color_272x92dp.png'}))
+        self.assertTrue(servable.run({'url': 'https://www.google.com/images/branding/'
+                                             'googlelogo/1x/googlelogo_color_272x92dp.png'}))
 
     def test_single_file_list_input(self):
         # Make the metadata model
@@ -184,16 +185,13 @@ class TestPython(TestCase):
         servable = PythonStaticMethodServable(**model.to_dict())
 
         # Run on local file
-        self.assertTrue(servable.run(__file__, files=[{'url': __file__}]))
+        self.assertTrue(servable.run([{'url': __file__}]))
         if system() != 'Windows':
-            self.assertTrue(servable.run(__file__,
-                                         files=[{'url': 'file:///' + __file__}]))  # Fail on Windows
+            self.assertTrue(servable.run([{'url': 'file:///' + __file__}]))  # Fail on Windows
 
         # Run on remote file
-        self.assertTrue(servable.run(__file__,
-                                     files=[{'url': 'https://www.google.com/images/branding/'
-                                                    'googlelogo/1x/googlelogo_color_272x92dp.png'}]
-                                     ))
+        self.assertTrue(servable.run([{'url': 'https://www.google.com/images/branding/'
+                                              'googlelogo/1x/googlelogo_color_272x92dp.png'}]))
 
     def test_file_multiinput(self):
         model = PythonStaticMethodModel.from_function_pointer(multifile_input)
@@ -211,7 +209,8 @@ class TestPython(TestCase):
         servable = PythonStaticMethodServable(**model.to_dict())
 
         # Test it
-        self.assertTrue(servable.run(['file', ['file'], True], files=[
+        self.assertTrue(servable.run([
             {'url': __file__},
-            [{'url': __file__}]
+            [{'url': __file__}],
+            True
         ]))

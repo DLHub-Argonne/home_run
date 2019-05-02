@@ -56,15 +56,16 @@ class BaseServable:
 
     The signatures to these functions will always have three arguments:
 
-    - ``inputs``: The data passed to the functions as inputs
-    - ``files``: Data needed to access any files included in the inputs.
+    - ``inputs``: The data passed to the functions as inputs.
+    Data needed to access any files should be included in the inputs.
     Each file is defined by a dictionary with one mandatory key 'url',
     which stores the URL of the file (e.g., an HTTP address),
     and - optionally - 'headers', which includes any
     authorization headers needed to access the files.
     How this information must be passed to the servable varies depending on the
     arguments to the function:
-        - If the function has a single file as the argument, a file dictionary is expected.
+        - If the function has a single file as the argument, a file dictionary is expected as
+        that argument
         - If the function has a list of files as the arguments,
         a list of file dictionaries is expected.
         - If the function has multiple inputs (i.e., it takes a tuple), then the function expects
@@ -149,13 +150,12 @@ class BaseServable:
         params.update(parameters)
         return params
 
-    def _get_files(self, method_name, inputs, files, tmpdir):
+    def _get_files(self, method_name, inputs, tmpdir):
         """Generate local paths for file inputs
 
         Args:
             method_name (str): Name of the method to be invoked
             inputs: Input arguments to the function
-            files (list or dict): List of files to be accessed
             tmpdir (str): Path to copy any remote files to
         Returns:
              Inputs substituted to handle the local files
@@ -164,21 +164,22 @@ class BaseServable:
         # Get the input argument description
         method_inputs = self.servable['methods'][method_name]['input']
 
-        # Case 1: Single file as input
+        # Replace file details, if desired
         if method_inputs['type'] == 'file':
-            return _get_file(files, tmpdir)
+            return _get_file(inputs, tmpdir)
         elif method_inputs['type'] == 'list' and method_inputs['item_type'] == {'type': 'file'}:
-            return [_get_file(f, tmpdir) for f in files]
+            return [_get_file(f, tmpdir) for f in inputs]
         elif method_inputs['type'] == 'tuple':
             new_inputs = list(inputs)
-            for i, (arg_files, arg_type) in enumerate(zip(files, method_inputs['element_types'])):
+            for i, (arg_files, arg_type) in enumerate(zip(inputs, method_inputs['element_types'])):
                 if arg_type['type'] == 'file':
                     new_inputs[i] = _get_file(arg_files, tmpdir)
                 elif arg_type['type'] == 'list' and arg_type['item_type'] == {'type': 'file'}:
                     new_inputs[i] = [_get_file(f, tmpdir) for f in arg_files]
             return new_inputs
-        else:
-            raise ValueError('Input type not valid for file inputs')
+
+        # No files
+        return inputs
 
     def _run(self, inputs, **parameters):
         """Private function to be implemented by subclass"""
@@ -201,20 +202,17 @@ class BaseServable:
             f (function pointer): Function to set
         """
 
-        def new_function(inputs, files=None, parameters=None):
+        def new_function(inputs, parameters=None):
             # Get the default parameters
             if parameters is None:
                 parameters = dict()
             params = self._get_method_parameters(method_name, parameters)
             logger.debug('Running method {} with params: {}'.format(method_name, params))
 
-            if files is None:
-                return f(inputs, **params)
-            else:
-                # Download files, if needed
-                with TemporaryDirectory() as td:
-                    new_inputs = self._get_files(method_name, inputs, files, td)
-                    return f(new_inputs, **params)
+            # Download files, if needed
+            with TemporaryDirectory() as td:
+                new_inputs = self._get_files(method_name, inputs, td)
+                return f(new_inputs, **params)
 
         setattr(self, method_name, new_function)
         logger.info('Added function to servable {}: {}'.format(self.dlhub['name'],
