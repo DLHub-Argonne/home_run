@@ -19,7 +19,6 @@ def _get_file(file_data: dict, tmpdir: str):
     Returns:
         (str): Path to the file on the local system
     """
-
     # If the url is a known path, skip parsing
     if os.path.isfile(file_data['url']):
         return file_data['url']
