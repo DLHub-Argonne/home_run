@@ -42,4 +42,3 @@ class TorchServable(BaseServable):
             return [o.detach().numpy() for o in outputs]
         else:
             return outputs.detach().numpy()
-
