@@ -34,7 +34,8 @@ class TorchTest(TestCase):
         os.unlink('multimodel.pth')
 
     def test_single(self):
-        model = TorchModel.create_model('model.pth', (None, 2), (None, 10)).set_name('test').set_title('test')
+        model = TorchModel.create_model('model.pth', (None, 2), (None, 10))\
+            .set_name('test').set_title('test')
 
         # Make the servable
         servable = TorchServable(**model.to_dict())
@@ -47,7 +48,8 @@ class TorchTest(TestCase):
 
     def test_multimodel(self):
         model = TorchModel.create_model('multimodel.pth',
-                                        [(None, 4)]*2, [(None, 10)]*2).set_name('test').set_title('test')
+                                        [(None, 4)]*2, [(None, 10)]*2)\
+            .set_name('test').set_title('test')
 
         # Make the servable
         servable = TorchServable(**model.to_dict())
