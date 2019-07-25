@@ -7,8 +7,8 @@ import os
 logger = logging.getLogger(__name__)
 
 
-# Chunk size for donwloading files
-chunk_size = 1024 ** 3  # 1 MB chunks per file (TODO (lw): Is this a good size))
+# Chunk size for downloading files
+chunk_size = 1024 ** 3  # 1 MB chunks per file (TODO (lw): Is this a good size?))
 
 
 def _get_file(file_data: dict, tmpdir: str):
@@ -210,6 +210,7 @@ class BaseServable:
             logger.debug('Running method {} with params: {}'.format(method_name, params))
 
             # Download files, if needed
+            # TODO (wardlt): It could be nice to avoid creating a directory on every invocation
             with TemporaryDirectory() as td:
                 new_inputs = self._get_files(method_name, inputs, td)
                 return f(new_inputs, **params)
