@@ -1,6 +1,6 @@
 from dlhub_sdk.models.servables.keras import KerasModel
-from keras.models import Sequential, Model
-from keras.layers import Dense, Input, Concatenate
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Dense, Input, Concatenate
 from unittest import TestCase
 from tempfile import mkdtemp
 import numpy as np

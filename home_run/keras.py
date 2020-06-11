@@ -1,5 +1,10 @@
 from .base import BaseServable
-from keras.models import load_model, model_from_yaml, model_from_json
+
+try:
+    import keras
+except ImportError:
+    from tensorflow import keras
+
 from importlib import import_module
 import numpy as np
 import logging
@@ -30,15 +35,15 @@ class KerasServable(BaseServable):
             arch_path = self.dlhub['files']['arch']
             if arch_path.endswith('.h5') or arch_path.endswith('.hdf') \
                     or arch_path.endswith('.hdf5') or arch_path.endswith('.hd5'):
-                self.model = load_model(arch_path, custom_objects=custom_objects, compile=False)
+                self.model = keras.models.load_model(arch_path, custom_objects=custom_objects, compile=False)
             elif arch_path.endswith('.json'):
                 with open(arch_path) as fp:
                     json_string = fp.read()
-                self.model = model_from_json(json_string, custom_objects=custom_objects)
+                self.model = keras.models.model_from_json(json_string, custom_objects=custom_objects)
             elif arch_path.endswith('.yml') or arch_path.endswith('.yaml'):
                 with open(arch_path) as fp:
                     yaml_string = fp.read()
-                self.model = model_from_yaml(yaml_string, custom_objects=custom_objects)
+                self.model = keras.models.model_from_yaml(yaml_string, custom_objects=custom_objects)
             else:
                 raise ValueError('File type for architecture not recognized')
 
@@ -47,7 +52,7 @@ class KerasServable(BaseServable):
             logger.info('Loaded arch ({}) and weights ({})'.format(arch_path,
                                                                    self.dlhub['files']['model']))
         else:
-            self.model = load_model(self.dlhub['files']['model'])
+            self.model = keras.models.load_model(self.dlhub['files']['model'])
             logger.info('Loaded single-file model ({})'.format(self.dlhub['files']['model']))
 
         # Check whether this model is a multi-input
