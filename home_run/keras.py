@@ -36,15 +36,18 @@ class KerasServable(BaseServable):
             arch_path = self.dlhub['files']['arch']
             if arch_path.endswith('.h5') or arch_path.endswith('.hdf') \
                     or arch_path.endswith('.hdf5') or arch_path.endswith('.hd5'):
-                self.model = keras.models.load_model(arch_path, custom_objects=custom_objects, compile=False)
+                self.model = keras.models.load_model(arch_path, compile=False,
+                                                     custom_objects=custom_objects)
             elif arch_path.endswith('.json'):
                 with open(arch_path) as fp:
                     json_string = fp.read()
-                self.model = keras.models.model_from_json(json_string, custom_objects=custom_objects)
+                self.model = keras.models.model_from_json(json_string,
+                                                          custom_objects=custom_objects)
             elif arch_path.endswith('.yml') or arch_path.endswith('.yaml'):
                 with open(arch_path) as fp:
                     yaml_string = fp.read()
-                self.model = keras.models.model_from_yaml(yaml_string, custom_objects=custom_objects)
+                self.model = keras.models.model_from_yaml(yaml_string,
+                                                          custom_objects=custom_objects)
             else:
                 raise ValueError('File type for architecture not recognized')
 
