@@ -1,7 +1,6 @@
 from .base import BaseServable
 from functools import partial
 import tensorflow as tf
-import numpy as np
 import logging
 import os
 logger = logging.getLogger(__name__)
