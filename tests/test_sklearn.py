@@ -1,6 +1,9 @@
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from dlhub_sdk.models.servables.sklearn import ScikitLearnModel
-from sklearn.externals import joblib
+try:
+    from sklearn.externals import joblib
+except ImportError:
+    import joblib
 from unittest import TestCase
 from tempfile import mkstemp
 import pickle as pkl
