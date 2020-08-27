@@ -1,6 +1,9 @@
 from dlhub_sdk.models.servables.keras import KerasModel
-from keras.models import Sequential, Model
-from keras.layers import Dense, Input, Concatenate
+# Try importing straight keras first, as we assume if it's installed it is installed for a reason
+try:
+    import keras
+except ImportError:
+    from tensorflow import keras
 from unittest import TestCase
 from tempfile import mkdtemp
 import numpy as np
@@ -11,9 +14,9 @@ from home_run.keras import KerasServable
 
 
 def _make_model():
-    model = Sequential()
-    model.add(Dense(16, input_shape=(1,), activation='relu', name='hidden'))
-    model.add(Dense(1, name='output'))
+    model = keras.models.Sequential()
+    model.add(keras.layers.Dense(16, input_shape=(1,), activation='relu', name='hidden'))
+    model.add(keras.layers.Dense(1, name='output'))
     model.compile(optimizer='rmsprop', loss='mse')
     return model
 
@@ -46,12 +49,12 @@ class KerasTest(TestCase):
 
     def test_keras_multiinput(self):
         # Make a Keras model
-        input_1 = Input(shape=(1,))
-        input_2 = Input(shape=(1,))
-        inputs = Concatenate()([input_1, input_2])
-        dense = Dense(16, activation='relu')(inputs)
-        output = Dense(1, activation='linear')(dense)
-        model = Model(inputs=[input_1, input_2], outputs=output)
+        input_1 = keras.layers.Input(shape=(1,))
+        input_2 = keras.layers.Input(shape=(1,))
+        inputs = keras.layers.Concatenate()([input_1, input_2])
+        dense = keras.layers.Dense(16, activation='relu')(inputs)
+        output = keras.layers.Dense(1, activation='linear')(dense)
+        model = keras.models.Model(inputs=[input_1, input_2], outputs=output)
         model.compile(optimizer='rmsprop', loss='mse')
 
         # Save it
@@ -76,11 +79,11 @@ class KerasTest(TestCase):
 
     def test_keras_multioutput(self):
         # Make a Keras model
-        input_1 = Input(shape=(1,))
-        dense = Dense(16, activation='relu')(input_1)
-        output_1 = Dense(1, activation='linear')(dense)
-        output_2 = Dense(1, activation='linear')(dense)
-        model = Model(inputs=input_1, outputs=[output_1, output_2])
+        input_1 = keras.layers.Input(shape=(1,))
+        dense = keras.layers.Dense(16, activation='relu')(input_1)
+        output_1 = keras.layers.Dense(1, activation='linear')(dense)
+        output_2 = keras.layers.Dense(1, activation='linear')(dense)
+        model = keras.models.Model(inputs=input_1, outputs=[output_1, output_2])
         model.compile(optimizer='rmsprop', loss='mse')
 
         # Save it
@@ -160,7 +163,8 @@ class KerasTest(TestCase):
             model.save(model_path)
 
             # Create the metadata
-            metadata = KerasModel.create_model(model_path, ['y'], custom_objects={'Dense': Dense})
+            metadata = KerasModel.create_model(model_path, ['y'],
+                                               custom_objects={'Dense': keras.layers.Dense})
             metadata.set_title('Keras Test')
             metadata.set_name('mlp')
 
