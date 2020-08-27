@@ -1,5 +1,12 @@
 from home_run.base import BaseServable
-from sklearn.externals import joblib
+try:
+    from sklearn.externals import joblib  # Try for the internal version first
+except ImportError:
+    try:
+        import joblib
+    except ModuleNotFoundError:
+        joblib = None
+
 import pickle as pkl
 import logging
 logger = logging.getLogger(__name__)
@@ -15,10 +22,12 @@ class ScikitLearnServable(BaseServable):
         model_path = self.dlhub['files']['model']
         if serialization_method == "pickle":
             self.model = pkl.load(open(model_path, 'rb'))
-            logging.info('Loaded model using pickle from: '.format(model_path))
+            logging.info('Loaded model using pickle from: {}'.format(model_path))
         elif serialization_method == "joblib":
+            if joblib is None:
+                raise ValueError('Could not import joblib')
             self.model = joblib.load(model_path)
-            logging.info('Loaded model using joblib from: '.format(model_path))
+            logging.info('Loaded model using joblib from: {}'.format(model_path))
         else:
             raise Exception('Unknown serialization method: ' + serialization_method)
 

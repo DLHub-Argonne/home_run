@@ -24,7 +24,7 @@ class TensorFlowServable(BaseServable):
         self.model = tf.saved_model.loader.load(self.sess,
                                                 [tf.saved_model.tag_constants.SERVING],
                                                 workdir)
-        logger.info('Loaded model from '.format(workdir))
+        logger.info('Loaded model from {}'.format(workdir))
 
         # Create methods for the other operations
         for name in self.servable['methods'].keys():
@@ -34,7 +34,7 @@ class TensorFlowServable(BaseServable):
                     name, self.servable['methods'][name]['method_details']['input_nodes'],
                     self.servable['methods'][name]['method_details']['output_nodes']
                 ))
-        logger.info('Mapped function name to inputs {} and outputs {}'.format(
+        logger.info('Mapped method {}. Inputs {}. Outputs {}.'.format(
             'run', self.servable['methods']['run']['method_details']['input_nodes'],
             self.servable['methods']['run']['method_details']['output_nodes']
         ))
