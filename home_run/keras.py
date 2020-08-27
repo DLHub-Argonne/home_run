@@ -1,5 +1,6 @@
 from .base import BaseServable
 
+# Assume that if keras is installed, it is preferred
 try:
     import keras
 except ImportError:
