@@ -97,9 +97,6 @@ def test_keras_multifile(tmpdir):
     model_json = os.path.join(tmpdir, 'model.json')
     with open(model_json, 'w') as fp:
         print(model.to_json(), file=fp)
-    model_yaml = os.path.join(tmpdir, 'model.yml')
-    with open(model_yaml, 'w') as fp:
-        print(model.to_yaml(), file=fp)
 
     weights_path = os.path.join(tmpdir, 'weights.hd5')
     model.save_weights(weights_path)
@@ -120,10 +117,16 @@ def test_keras_multifile(tmpdir):
     servable = KerasServable(**metadata.to_dict())
     assert model.predict(np.array(x))[0] == servable.run(x)[0]
 
-    metadata = KerasModel.create_model(weights_path, ['y'], arch_path=model_yaml)
-    metadata.set_title('Keras Test').set_name('mlp')
-    servable = KerasServable(**metadata.to_dict())
-    assert model.predict(np.array(x))[0] == servable.run(x)[0]
+    # Try it with YAML in earlier versions
+    keras_major_version = tuple(int(x) for x in keras.__version__.split(".")[:2])
+    if keras_major_version < (2, 6):
+        model_yaml = os.path.join(tmpdir, 'model.yml')
+        with open(model_yaml, 'w') as fp:
+            print(model.to_yaml(), file=fp)
+        metadata = KerasModel.create_model(weights_path, ['y'], arch_path=model_yaml)
+        metadata.set_title('Keras Test').set_name('mlp')
+        servable = KerasServable(**metadata.to_dict())
+        assert model.predict(np.array(x))[0] == servable.run(x)[0]
 
 
 def test_custom_layers(tmpdir):
