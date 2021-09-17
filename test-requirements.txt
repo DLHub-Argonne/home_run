@@ -6,3 +6,5 @@ scipy
 scikit-learn
 tensorflow
 torch
+pytest
+pytest-cov
