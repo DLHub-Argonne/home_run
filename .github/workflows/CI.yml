@@ -83,7 +83,7 @@ jobs:
       - name: Lint with flake8
         run: |
           # stop the build if there are any-flake8 comments
-          flake8 dlhub_sdk
+          flake8 .
           # Warn us about complexity
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest
