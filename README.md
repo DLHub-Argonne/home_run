@@ -1,6 +1,6 @@
 # DLHub home_run
 
-[![Build Status](https://travis-ci.org/DLHub-Argonne/home_run.svg?branch=master)](https://travis-ci.org/DLHub-Argonne/home_run)
+[![CI](https://github.com/DLHub-Argonne/home_run/actions/workflows/CI.yml/badge.svg)](https://github.com/DLHub-Argonne/home_run/actions/workflows/CI.yml)
 [![Coverage Status](https://coveralls.io/repos/github/DLHub-Argonne/home_run/badge.svg?branch=master)](https://coveralls.io/github/DLHub-Argonne/home_run?branch=master)
 [![PyPI version](https://badge.fury.io/py/home-run.svg)](https://badge.fury.io/py/home-run)
 
