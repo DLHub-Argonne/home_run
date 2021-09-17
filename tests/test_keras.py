@@ -4,10 +4,7 @@ try:
     import keras
 except ImportError:
     from tensorflow import keras
-from unittest import TestCase
-from tempfile import mkdtemp
 import numpy as np
-import shutil
 import os
 
 from home_run.keras import KerasServable
@@ -21,157 +18,131 @@ def _make_model():
     return model
 
 
-class KerasTest(TestCase):
+def test_keras(tmpdir):
+    # Make a Keras model
+    model = _make_model()
 
-    def test_keras(self):
-        # Make a Keras model
-        model = _make_model()
+    model_path = os.path.join(tmpdir, 'model.hd5')
+    model.save(model_path)
 
-        # Save it
-        tempdir = mkdtemp()
-        try:
-            model_path = os.path.join(tempdir, 'model.hd5')
-            model.save(model_path)
+    # Make the model
+    metadata = KerasModel.create_model(model_path, ["y"])
+    metadata.set_title('Keras Test')
+    metadata.set_name('mlp')
 
-            # Make the model
-            metadata = KerasModel.create_model(model_path, ["y"])
-            metadata.set_title('Keras Test')
-            metadata.set_name('mlp')
+    # Make the servable
+    servable = KerasServable(**metadata.to_dict())
+    x = [[1]]
+    assert model.predict(np.array(x))[0] == servable.run(x)[0]
 
-            # Make the servable
-            servable = KerasServable(**metadata.to_dict())
-            x = [[1]]
-            self.assertAlmostEqual(model.predict(np.array(x))[0],
-                                   servable.run(x)[0])
 
-        finally:
-            shutil.rmtree(tempdir)
+def test_keras_multiinput(tmpdir):
+    # Make a Keras model
+    input_1 = keras.layers.Input(shape=(1,))
+    input_2 = keras.layers.Input(shape=(1,))
+    inputs = keras.layers.Concatenate()([input_1, input_2])
+    dense = keras.layers.Dense(16, activation='relu')(inputs)
+    output = keras.layers.Dense(1, activation='linear')(dense)
+    model = keras.models.Model(inputs=[input_1, input_2], outputs=output)
+    model.compile(optimizer='rmsprop', loss='mse')
 
-    def test_keras_multiinput(self):
-        # Make a Keras model
-        input_1 = keras.layers.Input(shape=(1,))
-        input_2 = keras.layers.Input(shape=(1,))
-        inputs = keras.layers.Concatenate()([input_1, input_2])
-        dense = keras.layers.Dense(16, activation='relu')(inputs)
-        output = keras.layers.Dense(1, activation='linear')(dense)
-        model = keras.models.Model(inputs=[input_1, input_2], outputs=output)
-        model.compile(optimizer='rmsprop', loss='mse')
+    model_path = os.path.join(tmpdir, 'model.hd5')
+    model.save(model_path)
 
-        # Save it
-        tempdir = mkdtemp()
-        try:
-            model_path = os.path.join(tempdir, 'model.hd5')
-            model.save(model_path)
+    # Make the model
+    metadata = KerasModel.create_model(model_path, ["y"])
+    metadata.set_title('Keras Test')
+    metadata.set_name('mlp')
 
-            # Make the model
-            metadata = KerasModel.create_model(model_path, ["y"])
-            metadata.set_title('Keras Test')
-            metadata.set_name('mlp')
+    # Make the servable
+    servable = KerasServable(**metadata.to_dict())
+    x = [[1]]
+    servable.run([x, x])
+    assert model.predict([np.array(x)]*2)[0] == servable.run([x, x])[0]
 
-            # Make the servable
-            servable = KerasServable(**metadata.to_dict())
-            x = [[1]]
-            servable.run([x, x])
-            self.assertAlmostEqual(model.predict([np.array(x)]*2)[0],
-                                   servable.run([x, x])[0])
-        finally:
-            shutil.rmtree(tempdir)
 
-    def test_keras_multioutput(self):
-        # Make a Keras model
-        input_1 = keras.layers.Input(shape=(1,))
-        dense = keras.layers.Dense(16, activation='relu')(input_1)
-        output_1 = keras.layers.Dense(1, activation='linear')(dense)
-        output_2 = keras.layers.Dense(1, activation='linear')(dense)
-        model = keras.models.Model(inputs=input_1, outputs=[output_1, output_2])
-        model.compile(optimizer='rmsprop', loss='mse')
+def test_keras_multioutput(tmpdir):
+    # Make a Keras model
+    input_1 = keras.layers.Input(shape=(1,))
+    dense = keras.layers.Dense(16, activation='relu')(input_1)
+    output_1 = keras.layers.Dense(1, activation='linear')(dense)
+    output_2 = keras.layers.Dense(1, activation='linear')(dense)
+    model = keras.models.Model(inputs=input_1, outputs=[output_1, output_2])
+    model.compile(optimizer='rmsprop', loss='mse')
 
-        # Save it
-        tempdir = mkdtemp()
-        try:
-            model_path = os.path.join(tempdir, 'model.hd5')
-            model.save(model_path)
+    model_path = os.path.join(tmpdir, 'model.hd5')
+    model.save(model_path)
 
-            # Make the model
-            metadata = KerasModel.create_model(model_path, ["y"])
-            metadata.set_title('Keras Test')
-            metadata.set_name('mlp')
+    # Make the model
+    metadata = KerasModel.create_model(model_path, ["y"])
+    metadata.set_title('Keras Test')
+    metadata.set_name('mlp')
 
-            # Make the servable
-            servable = KerasServable(**metadata.to_dict())
-            x = [[1]]
-            servable.run(x)
-            self.assertTrue(np.isclose(model.predict(np.array(x)), servable.run(x)).all())
-        finally:
-            shutil.rmtree(tempdir)
+    # Make the servable
+    servable = KerasServable(**metadata.to_dict())
+    x = [[1]]
+    servable.run(x)
+    assert np.isclose(model.predict(np.array(x)), servable.run(x)).all()
 
-    def test_keras_multifile(self):
-        """Test loading a shim when model is saved as a separate arch and weights file"""
 
-        # Make a Keras model
-        model = _make_model()
+def test_keras_multifile(tmpdir):
+    """Test loading a shim when model is saved as a separate arch and weights file"""
 
-        # Save it
-        tempdir = mkdtemp()
-        try:
-            model_path = os.path.join(tempdir, 'model.hd5')
-            model.save(model_path, include_optimizer=False)
-            model_json = os.path.join(tempdir, 'model.json')
-            with open(model_json, 'w') as fp:
-                print(model.to_json(), file=fp)
-            model_yaml = os.path.join(tempdir, 'model.yml')
-            with open(model_yaml, 'w') as fp:
-                print(model.to_yaml(), file=fp)
+    # Make a Keras model
+    model = _make_model()
 
-            weights_path = os.path.join(tempdir, 'weights.hd5')
-            model.save_weights(weights_path)
+    # Save it
+    model_path = os.path.join(tmpdir, 'model.hd5')
+    model.save(model_path, include_optimizer=False)
+    model_json = os.path.join(tmpdir, 'model.json')
+    with open(model_json, 'w') as fp:
+        print(model.to_json(), file=fp)
+    model_yaml = os.path.join(tmpdir, 'model.yml')
+    with open(model_yaml, 'w') as fp:
+        print(model.to_yaml(), file=fp)
 
-            # Create the metadata
-            metadata = KerasModel.create_model(weights_path, ['y'], arch_path=model_path)
-            metadata.set_title('Keras Test')
-            metadata.set_name('mlp')
+    weights_path = os.path.join(tmpdir, 'weights.hd5')
+    model.save_weights(weights_path)
 
-            # Make the servable
-            servable = KerasServable(**metadata.to_dict())
-            x = [[1]]
-            self.assertAlmostEqual(model.predict(np.array(x))[0],
-                                   servable.run(x)[0])
+    # Create the metadata
+    metadata = KerasModel.create_model(weights_path, ['y'], arch_path=model_path)
+    metadata.set_title('Keras Test')
+    metadata.set_name('mlp')
 
-            # Test with the JSON and YAML
-            metadata = KerasModel.create_model(weights_path, ['y'], arch_path=model_json)
-            metadata.set_title('Keras Test').set_name('mlp')
-            servable = KerasServable(**metadata.to_dict())
-            self.assertAlmostEqual(model.predict(np.array(x))[0], servable.run(x)[0])
+    # Make the servable
+    servable = KerasServable(**metadata.to_dict())
+    x = [[1]]
+    assert model.predict(np.array(x))[0] == servable.run(x)[0]
 
-            metadata = KerasModel.create_model(weights_path, ['y'], arch_path=model_yaml)
-            metadata.set_title('Keras Test').set_name('mlp')
-            servable = KerasServable(**metadata.to_dict())
-            self.assertAlmostEqual(model.predict(np.array(x))[0], servable.run(x)[0])
-        finally:
-            shutil.rmtree(tempdir)
+    # Test with the JSON and YAML
+    metadata = KerasModel.create_model(weights_path, ['y'], arch_path=model_json)
+    metadata.set_title('Keras Test').set_name('mlp')
+    servable = KerasServable(**metadata.to_dict())
+    assert model.predict(np.array(x))[0] == servable.run(x)[0]
 
-    def test_custom_layers(self):
-        """Test adding custom layers to the definition"""
+    metadata = KerasModel.create_model(weights_path, ['y'], arch_path=model_yaml)
+    metadata.set_title('Keras Test').set_name('mlp')
+    servable = KerasServable(**metadata.to_dict())
+    assert model.predict(np.array(x))[0] == servable.run(x)[0]
 
-        # Make a simple model
-        model = _make_model()
 
-        tmpdir = mkdtemp()
-        try:
-            # Save it
-            model_path = os.path.join(tmpdir, 'model.hd5')
-            model.save(model_path)
+def test_custom_layers(tmpdir):
+    """Test adding custom layers to the definition"""
 
-            # Create the metadata
-            metadata = KerasModel.create_model(model_path, ['y'],
-                                               custom_objects={'Dense': keras.layers.Dense})
-            metadata.set_title('Keras Test')
-            metadata.set_name('mlp')
+    # Make a simple model
+    model = _make_model()
 
-            # Make the servable
-            servable = KerasServable(**metadata.to_dict())
-            x = [[1]]
-            self.assertAlmostEqual(model.predict(np.array(x))[0],
-                                   servable.run(x)[0])
-        finally:
-            shutil.rmtree(tmpdir)
+    # Save it
+    model_path = os.path.join(tmpdir, 'model.hd5')
+    model.save(model_path)
+
+    # Create the metadata
+    metadata = KerasModel.create_model(model_path, ['y'],
+                                       custom_objects={'Dense': keras.layers.Dense})
+    metadata.set_title('Keras Test')
+    metadata.set_name('mlp')
+
+    # Make the servable
+    servable = KerasServable(**metadata.to_dict())
+    x = [[1]]
+    assert model.predict(np.array(x))[0] == servable.run(x)[0]

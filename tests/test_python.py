@@ -49,7 +49,7 @@ class TestPython(TestCase):
                                                         parameters=dict(axis=1))).all())
 
         # Test the autobatch
-        model['servable']['methods']['run']['method_details']['autobatch'] = True
+        model.servable.methods['run'].method_details['autobatch'] = True
         servable = PythonStaticMethodServable(**model.to_dict())
 
         self.assertTrue(np.isclose([2, 4], servable.run([[1, 2], [3, 4]])).all())
