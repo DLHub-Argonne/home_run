@@ -1,10 +1,10 @@
 from dlhub_sdk.models.servables.pytorch import TorchModel
-from home_run.pytorch import TorchServable
-from unittest import TestCase
+from pytest import fixture
 from torch import nn
 import numpy as np
 import torch
-import os
+
+from home_run.pytorch import TorchServable
 
 
 class MultiNetwork(nn.Module):
@@ -17,48 +17,55 @@ class MultiNetwork(nn.Module):
         return self.layer(x), self.layer(y)
 
 
-class TorchTest(TestCase):
+@fixture()
+def model(tmpdir):
+    # Make the single- and multi-input models
+    model = nn.Sequential(
+        nn.Linear(2, 10),
+        nn.ReLU(),
+    )
+    model_path = str(tmpdir / 'model.pth')
+    torch.save(model, model_path)
+    return model, model_path
 
-    def setUp(self):
-        # Make the single- and multi-input models
-        self.model = nn.Sequential(
-            nn.Linear(2, 10),
-            nn.ReLU(),
-        )
-        torch.save(self.model, 'model.pth')
-        self.multimodel = MultiNetwork()
-        torch.save(self.multimodel, 'multimodel.pth')
 
-    def tearDown(self) -> None:
-        os.unlink('model.pth')
-        os.unlink('multimodel.pth')
+@fixture()
+def multimodel(tmpdir):
+    multimodel = MultiNetwork()
+    model_path = str(tmpdir / 'multimodel.pth')
+    torch.save(multimodel, model_path)
+    return multimodel, model_path
 
-    def test_single(self):
-        model = TorchModel.create_model('model.pth', (None, 2), (None, 10))\
-            .set_name('test').set_title('test')
 
-        # Make the servable
-        servable = TorchServable(**model.to_dict())
+def test_single(model):
+    # Create the metadata model
+    model, path = model
+    metadata = TorchModel.create_model(path, (None, 2), (None, 10)) \
+        .set_name('test').set_title('test')
 
-        # Verify they yield the same results
-        test_x = np.random.random((2, 2))
-        y_true = self.model(torch.from_numpy(test_x).float()).detach().numpy()
-        y_pred = servable.run(test_x)
-        self.assertTrue(np.isclose(y_pred, y_true).all())
+    # Make the servable
+    servable = TorchServable(**metadata.to_dict())
 
-    def test_multimodel(self):
-        model = TorchModel.create_model('multimodel.pth',
-                                        [(None, 4)]*2, [(None, 10)]*2)\
-            .set_name('test').set_title('test')
+    # Verify they yield the same results
+    test_x = np.random.random((2, 2))
+    y_true = model(torch.from_numpy(test_x).float()).detach().numpy()
+    y_pred, _ = servable.run(test_x)
+    assert np.isclose(y_pred, y_true).all()
 
-        # Make the servable
-        servable = TorchServable(**model.to_dict())
 
-        # Verify they yield the same results
-        test_x = np.random.random((2, 4))
-        test_y = np.random.random((4, 4))
-        y_true = self.multimodel(torch.from_numpy(test_x).float(),
-                                 torch.from_numpy(test_y).float())
-        y_pred = servable.run((test_x, test_y))
-        self.assertTrue(np.isclose(y_pred[0], y_true[0].detach()).all())
-        self.assertTrue(np.isclose(y_pred[1], y_true[1].detach()).all())
+def test_multimodel(multimodel):
+    model, path = multimodel
+    metadata = TorchModel.create_model(path, [(None, 4)] * 2, [(None, 10)] * 2) \
+        .set_name('test').set_title('test')
+
+    # Make the servable
+    servable = TorchServable(**metadata.to_dict())
+
+    # Verify they yield the same results
+    test_x = np.random.random((2, 4))
+    test_y = np.random.random((4, 4))
+    y_true = model(torch.from_numpy(test_x).float(),
+                   torch.from_numpy(test_y).float())
+    y_pred, _ = servable.run((test_x, test_y))
+    assert np.isclose(y_pred[0], y_true[0].detach()).all()
+    assert np.isclose(y_pred[1], y_true[1].detach()).all()

@@ -4,70 +4,49 @@ try:
     from sklearn.externals import joblib
 except ImportError:
     import joblib
-from unittest import TestCase
-from tempfile import mkstemp
 import pickle as pkl
 import numpy as np
-import os
 
 from home_run.sklearn import ScikitLearnServable
 
 
-class TestScikitLearn(TestCase):
+def test_sklearn(tmpdir):
+    # Make a test training set
+    X = [[1], [2]]
+    y = [0, 1]
 
-    def test_sklearn(self):
-        # Make a test training set
-        X = [[1], [2]]
-        y = [0, 1]
+    # Train a classifier and a regressor
+    reg = LinearRegression().fit(X, y)
+    clf = LogisticRegression().fit(X, y)
 
-        # Train a classifier and a regressor
-        reg = LinearRegression().fit(X, y)
-        clf = LogisticRegression().fit(X, y)
+    # Save using joblib and pickle
+    files = dict((f, str(tmpdir / (f + '.pkl'))) for f in ['reg_pkl', 'reg_jbl', 'clf_pkl'])
 
-        # Save using joblib and pickle
-        files = {
-            'reg_pkl': mkstemp('.pkl'),
-            'reg_jbl': mkstemp('.pkl'),
-            'clf_pkl': mkstemp('.pkl')
-        }
+    # Save the files
+    with open(files['reg_pkl'], 'wb') as fp:
+        pkl.dump(reg, fp)
+    with open(files['clf_pkl'], 'wb') as fp:
+        pkl.dump(clf, fp)
+    joblib.dump(reg, files['reg_jbl'])
 
-        # Close the tempfiles
-        for f in files.values():
-            os.close(f[0])
+    # Test the regressor via pickle
+    model = ScikitLearnModel.create_model(files['reg_pkl'], 1, serialization_method='pickle')\
+        .set_title('Example')
+    model.set_name('example')
+    servable = ScikitLearnServable(**model.to_dict())
+    assert np.isclose(servable.run([[1]])[0], 0).all()
 
-        try:
-            # Save the files
-            with open(files['reg_pkl'][1], 'wb') as fp:
-                pkl.dump(reg, fp)
-            with open(files['clf_pkl'][1], 'wb') as fp:
-                pkl.dump(clf, fp)
-            joblib.dump(reg, files['reg_jbl'][1])
+    # Test the regressor via joblib
+    model = ScikitLearnModel.create_model(files['reg_jbl'], 1, serialization_method='joblib')\
+        .set_title('Example')
+    model.set_name('example')
+    servable = ScikitLearnServable(**model.to_dict())
+    assert np.isclose(servable.run([[1]])[0], 0).all()
 
-            # Test the regressor via pickle
-            model = ScikitLearnModel.create_model(files['reg_pkl'][1], 1,
-                                                  serialization_method='pickle')\
-                .set_title('Example')
-            model.set_name('example')
-            servable = ScikitLearnServable(**model.to_dict())
-            self.assertAlmostEqual(servable.run([[1]])[0], 0)
-
-            # Test the regressor via joblib
-            model = ScikitLearnModel.create_model(files['reg_jbl'][1], 1,
-                                                  serialization_method='joblib')\
-                .set_title('Example')
-            model.set_name('example')
-            servable = ScikitLearnServable(**model.to_dict())
-            self.assertAlmostEqual(servable.run([[1]])[0], 0)
-
-            # Test the classifier
-            model = ScikitLearnModel.create_model(files['clf_pkl'][1], 1,
-                                                  classes=['Yes', 'No'],
-                                                  serialization_method='pickle')\
-                .set_title('Example')
-            model.set_name('example')
-            servable = ScikitLearnServable(**model.to_dict())
-            self.assertTrue(np.isclose(servable.run([[1]]), clf.predict_proba([[1]])).all())
-
-        finally:
-            for f in files.values():
-                os.unlink(f[1])
+    # Test the classifier
+    model = ScikitLearnModel.create_model(files['clf_pkl'], 1, classes=['Yes', 'No'],
+                                          serialization_method='pickle')\
+        .set_title('Example')
+    model.set_name('example')
+    servable = ScikitLearnServable(**model.to_dict())
+    assert np.isclose(servable.run([[1]])[0], clf.predict_proba([[1]])).all()
