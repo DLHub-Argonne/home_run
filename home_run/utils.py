@@ -25,7 +25,7 @@ def compute_wrapper(capture_output: bool = True) -> Dict[str, Any]:
     # Code graciously adapted from QCEngine:
     #  https://github.com/MolSSI/QCEngine/blob/4a92ee6a0dcea42316e00f9f9a7c07d95cbda111/qcengine/util.py#L97
 
-    metadata = {"stdout": None, "stderr": None, "success": True}
+    metadata = {"stdout": None, "stderr": None, "success": True, "exc": None, "error_message": None, "wall_time": None}
 
     # Start timer
     comp_time = monotonic()
