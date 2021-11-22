@@ -1,3 +1,6 @@
+from typing import Optional
+
+from .utils import compute_wrapper
 from .version import __version__
 from tempfile import TemporaryDirectory
 from urllib3.util import parse_url
@@ -202,7 +205,7 @@ class BaseServable:
             f (function pointer): Function to set
         """
 
-        def new_function(inputs, parameters=None):
+        def new_function(inputs, parameters: Optional[dict] = None, debug: bool = False):
             # Get the default parameters
             if parameters is None:
                 parameters = dict()
@@ -213,7 +216,12 @@ class BaseServable:
             # TODO (wardlt): It could be nice to avoid creating a directory on every invocation
             with TemporaryDirectory() as td:
                 new_inputs = self._get_files(method_name, inputs, td)
-                return f(new_inputs, **params)
+
+                # Keep run the function
+                output = None
+                with compute_wrapper(capture_output=debug) as metadata:
+                    output = f(new_inputs, **params)
+                return output, metadata
 
         setattr(self, method_name, new_function)
         logger.info('Added function to servable {}: {}'.format(self.dlhub['name'],

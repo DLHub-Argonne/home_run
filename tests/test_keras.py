@@ -82,7 +82,7 @@ def test_keras_multioutput(tmpdir):
     servable = KerasServable(**metadata.to_dict())
     x = [[1]]
     servable.run(x)
-    assert np.isclose(model.predict(np.array(x)), servable.run(x)).all()
+    assert np.isclose(model.predict(np.array(x)), servable.run(x)[0]).all()
 
 
 def test_keras_multifile(tmpdir):

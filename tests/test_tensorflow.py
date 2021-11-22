@@ -1,15 +1,10 @@
 from dlhub_sdk.models.servables.tensorflow import TensorFlowModel
 from home_run.tensorflow import TensorFlowServable
-from unittest import TestCase
 import tensorflow as tf
 import numpy as np
-import shutil
-import os
-
-tf_export_path = os.path.join(os.path.dirname(__file__), 'tf-model')
 
 
-def _make_model_v1():
+def _make_model_v1(tf_export_path):
     """Example used in the dlhub_toolbox"""
 
     tf.reset_default_graph()
@@ -68,7 +63,7 @@ def _make_model_v1():
         builder.save()
 
 
-def _make_model_v2():
+def _make_model_v2(tf_export_path):
     """Builds and saves a custom module"""
     class CustomModule(tf.Module):
 
@@ -110,41 +105,29 @@ def _make_model_v2():
     )
 
 
-class TestTensorFlow(TestCase):
+def test_tensorflow(tmpdir):
+    tf_export_path = str(tmpdir)
+    if tf.__version__ < '2':
+        _make_model_v1(tf_export_path)
+    else:
+        _make_model_v2(tf_export_path)
 
-    maxDiff = 4096
+    # Make the model description
+    metadata = TensorFlowModel.create_model(tf_export_path).set_name('tf').set_title('TF')
 
-    def setUp(self):
-        # Clear existing model
-        if os.path.isdir(tf_export_path):
-            shutil.rmtree(tf_export_path)
+    # Make the servable
+    model = TensorFlowServable(**metadata.to_dict())
 
-    def tearDown(self):
-        self.setUp()
+    # Test it out
+    print(model.run([[2, 3, 4]]))
+    assert (1, 3) == np.shape(model.run([[2, 3, 4]])[0])
+    assert np.isclose([[3, 4, 5]], model.run([[2, 3, 4]])[0]).all()
+    assert np.isclose([[4, 8, 12]], model.scalar_multiply(([[1, 2, 3]], 4))[0]).all()
+    assert np.isclose(3, model.length([[1, 2, 3]])[0]).all()
 
-    def test_tensorflow(self):
-        if tf.__version__ < '2':
-            _make_model_v1()
-        else:
-            _make_model_v2()
-
-        # Make the model description
-        metadata = TensorFlowModel.create_model(tf_export_path).set_name('tf').set_title('TF')
-
-        # Make the servable
-        model = TensorFlowServable(**metadata.to_dict())
-
-        # Test it out
-        print(model.run([[2, 3, 4]]))
-        self.assertEqual((1, 3), np.shape(model.run([[2, 3, 4]])))
-        self.assertTrue(np.isclose([[3, 4, 5]], model.run([[2, 3, 4]])).all())
-        self.assertTrue(np.isclose([[4, 8, 12]],
-                                   model.scalar_multiply(([[1, 2, 3]], 4))).all())
-        self.assertAlmostEqual(3, model.length([[1, 2, 3]]))
-
-        # Test the multioutput
-        output = model.multioutput(([[1, 2, 3]], 4))
-        self.assertIsInstance(output, list)
-        self.assertEqual(2, len(output))
-        self.assertEqual((1, 3), np.shape(output[0]))
-        self.assertEqual((1, 3), np.shape(output[1]))
+    # Test the multioutput
+    output, _ = model.multioutput(([[1, 2, 3]], 4))
+    assert isinstance(output, list)
+    assert 2 == len(output)
+    assert (1, 3) == np.shape(output[0])
+    assert (1, 3) == np.shape(output[1])
